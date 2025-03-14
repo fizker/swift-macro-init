@@ -12,7 +12,7 @@ public struct InitMacro {
 	public var initFunction: SyntaxNodeString {
 		"""
 		init(\(raw: members.map { "\($0.name): \($0.type)" }.joined(separator: ", "))) {
-			\(raw: members.map { "self.\($0.name) = \($0.name)" }.joined(separator: "\n"))
+			\(raw: members.map { "\tself.\($0.name) = \($0.name)" }.joined(separator: "\n\t"))
 		}
 		"""
 	}

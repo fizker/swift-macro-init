@@ -28,8 +28,8 @@ final class swift_macro_public_initTests: XCTestCase {
 
 		extension Foo {
 			init(a: String, b: Int) {
-			self.a = a
-			self.b = b
+				self.a = a
+				self.b = b
 			}
 		}
 		""", macros: testMacros)
