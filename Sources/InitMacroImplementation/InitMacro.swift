@@ -3,11 +3,12 @@ import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
 public struct InitMacro {
-	var access: DeclModifierListSyntax.Element?
+	var access: DeclModifierSyntax?
 	var members: [Member]
 
-	init(declaration: some DeclGroupSyntax) throws {
-		access = Self.findAccess(declaration)
+	init(access: AccessLevel, declaration: some DeclGroupSyntax) throws {
+		self.access = access.keyword.map { DeclModifierSyntax(name: TokenSyntax.keyword($0)) } ?? Self.findAccess(declaration)
+		self.access?.trailingTrivia = .space
 		members = try declaration.memberBlock.members.compactMap(Member.init(_:))
 	}
 
@@ -40,7 +41,7 @@ public struct InitMacro {
 			element?.name.tokenKind = .keyword(.public)
 		}
 
-		return element
+		return element?.trimmed
 	}
 
 }
@@ -52,8 +53,18 @@ extension InitMacro: MemberMacro {
 		conformingTo: [TypeSyntax],
 		in context: some MacroExpansionContext
 	) throws -> [DeclSyntax] {
-		let v = try InitMacro(declaration: declaration)
+		let v = try InitMacro(access: find("access", in: node.arguments) ?? .automatic, declaration: declaration)
 
 		return [v.initFunction]
+	}
+
+	private static func find(_ label: String, in arguments: AttributeSyntax.Arguments?) -> AccessLevel? {
+		guard
+			let arguments = arguments?.as(LabeledExprListSyntax.self),
+			let arg = arguments.first(where: { $0.label?.text == label }),
+			let memberAccess = arg.expression.as(MemberAccessExprSyntax.self)
+		else { return nil }
+
+		return AccessLevel(rawValue: memberAccess.declName.baseName.text)
 	}
 }
