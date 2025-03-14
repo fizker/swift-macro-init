@@ -64,6 +64,27 @@ final class swift_macro_public_initTests: XCTestCase {
 		}
 		""", macros: testMacros, indentationWidth: .tabs(1))
 	}
+
+	func test__init__struct_membersHasDefaultValues__initParametersHaveSameDefaultValue() async throws {
+		assertMacroExpansion("""
+		@Init()
+		struct Foo {
+			var a: String = ""
+			var b: Int = 1
+		}
+		""",
+		expandedSource: """
+		struct Foo {
+			var a: String = ""
+			var b: Int = 1
+
+			init(a: String = "", b: Int = 1) {
+				self.a = a
+				self.b = b
+			}
+		}
+		""", macros: testMacros, indentationWidth: .tabs(1))
+	}
 }
 #else
 final class swift_macro_public_initTests: XCTestCase {

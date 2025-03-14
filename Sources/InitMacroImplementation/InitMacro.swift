@@ -11,7 +11,7 @@ public struct InitMacro {
 
 	public var initFunction: DeclSyntax {
 		"""
-		init(\(raw: members.map { "\($0.name): \($0.type)" }.joined(separator: ", "))) {
+		init(\(raw: members.map(\.asParameter).joined(separator: ", "))) {
 			\(raw: members.map { "self.\($0.name) = \($0.name)" }.joined(separator: "\n"))
 		}
 		"""
@@ -21,6 +21,15 @@ public struct InitMacro {
 		var name: String
 		var type: String
 		var defaultValue: String?
+
+		var asParameter: String {
+			let base = "\(name): \(type)"
+			if let defaultValue = defaultValue {
+				return "\(base) = \(defaultValue)"
+			} else {
+				return base
+			}
+		}
 	}
 }
 
@@ -59,6 +68,20 @@ extension InitMacro.Member {
 
 			self.type = type
 			hasType = true
+			break
+		}
+
+		while let item = iterator.next() {
+			guard .equal == item.tokenKind
+			else { continue }
+
+			var defaultValue = ""
+
+			while let token = iterator.next() {
+				defaultValue += token.text
+			}
+
+			self.defaultValue = defaultValue
 			break
 		}
 
