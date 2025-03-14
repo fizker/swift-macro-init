@@ -153,6 +153,27 @@ final class InitMacroTests: XCTestCase {
 		}
 		""", macros: testMacros, indentationWidth: .tabs(1))
 	}
+
+	func test__init__class_openAccess__initIsPublic() async throws {
+		assertMacroExpansion("""
+		@Init()
+		open class Foo {
+			var a: String
+			var b: Int
+		}
+		""",
+		expandedSource: """
+		open class Foo {
+			var a: String
+			var b: Int
+
+			public init(a: String, b: Int) {
+				self.a = a
+				self.b = b
+			}
+		}
+		""", macros: testMacros, indentationWidth: .tabs(1))
+	}
 }
 #else
 final class InitMacroTests: XCTestCase {

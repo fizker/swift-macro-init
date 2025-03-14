@@ -19,8 +19,8 @@ public struct InitMacro {
 		"""
 	}
 
-	static func findAccess(_ declaration: some DeclGroupSyntax) -> DeclModifierListSyntax.Element? {
-		return declaration.modifiers.first {
+	static func findAccess(_ declaration: some DeclGroupSyntax) -> DeclModifierSyntax? {
+		var element = declaration.modifiers.first {
 			switch $0.name.tokenKind {
 			case
 				.keyword(.public),
@@ -34,6 +34,13 @@ public struct InitMacro {
 				return false
 			}
 		}
+
+		if element?.name.tokenKind == .keyword(.open) {
+			// `open` is not supported; we change it to `public`
+			element?.name.tokenKind = .keyword(.public)
+		}
+
+		return element
 	}
 
 }
