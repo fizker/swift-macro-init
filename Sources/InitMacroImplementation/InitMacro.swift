@@ -36,22 +36,30 @@ extension InitMacro.Member {
 		type = ""
 
 		loop: while let item = iterator.next() {
-			switch item.tokenKind {
-			case let .identifier(name):
-				self.name = name
-				hasName = true
-				break loop
-			default: break
-			}
+			guard case let .keyword(keyword) = item.tokenKind
+			else { continue }
+
+			guard keyword == .let || keyword == .var
+			else { continue }
+
+			break
 		}
-		loop: while let item = iterator.next() {
-			switch item.tokenKind {
-			case let .identifier(type):
-				self.type = type
-				hasType = true
-				break loop
-			default: break
-			}
+
+		while let item = iterator.next() {
+			guard case let .identifier(name) = item.tokenKind
+			else { continue }
+
+			self.name = name
+			hasName = true
+			break
+		}
+		while let item = iterator.next() {
+			guard case let .identifier(type) = item.tokenKind
+			else { continue }
+
+			self.type = type
+			hasType = true
+			break
 		}
 
 		guard hasName && hasType

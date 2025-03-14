@@ -12,7 +12,7 @@ let testMacros: [String: Macro.Type] = [
 	"Init": InitMacro.self,
 ]
 final class swift_macro_public_initTests: XCTestCase {
-	func test__init__simpleStruct_defaultAccess__initIsInternal_allFieldsIncluded() async throws {
+	func test__init__struct_simple_defaultAccess__initIsInternal_allFieldsIncluded() async throws {
 		assertMacroExpansion("""
 		@Init()
 		struct Foo {
@@ -24,6 +24,40 @@ final class swift_macro_public_initTests: XCTestCase {
 		struct Foo {
 			var a: String
 			var b: Int
+		}
+
+		extension Foo {
+			init(a: String, b: Int) {
+				self.a = a
+				self.b = b
+			}
+		}
+		""", macros: testMacros)
+	}
+
+	func test__init__struct_moreMemberTypes_defaultAccess__initIsInternal_onlyVarsAreIncluded() async throws {
+		assertMacroExpansion("""
+		@Init()
+		struct Foo {
+			var a: String
+			var b: Int
+
+			func c() -> D { .d }
+
+			enum D {
+				case d
+			}
+		}
+		""", expandedSource: """
+		struct Foo {
+			var a: String
+			var b: Int
+
+			func c() -> D { .d }
+
+			enum D {
+				case d
+			}
 		}
 
 		extension Foo {
