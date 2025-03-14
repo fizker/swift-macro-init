@@ -105,6 +105,27 @@ final class InitMacroTests: XCTestCase {
 		}
 		""", macros: testMacros, indentationWidth: .tabs(1))
 	}
+
+	func test__init__struct_publicAccess__initIsPublic() async throws {
+		assertMacroExpansion("""
+		@Init()
+		public struct Foo {
+			var a: String
+			var b: Int
+		}
+		""",
+		expandedSource: """
+		public struct Foo {
+			var a: String
+			var b: Int
+
+			public init(a: String, b: Int) {
+				self.a = a
+				self.b = b
+			}
+		}
+		""", macros: testMacros, indentationWidth: .tabs(1))
+	}
 }
 #else
 final class InitMacroTests: XCTestCase {
