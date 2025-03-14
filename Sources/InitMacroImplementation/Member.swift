@@ -21,7 +21,10 @@ extension Member {
 		guard
 			let varDecl = member.decl.as(VariableDeclSyntax.self),
 			let varType = VariableType(varDecl.bindingSpecifier),
-			let binding = varDecl.bindings.first
+			let binding = varDecl.bindings.first,
+
+			// Computed vars have this set
+			binding.accessorBlock == nil
 		else { return nil }
 
 		name = binding.pattern.trimmed

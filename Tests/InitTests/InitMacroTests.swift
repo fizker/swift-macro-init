@@ -33,6 +33,26 @@ final class InitMacroTests: XCTestCase {
 		""", macros: testMacros, indentationWidth: .tabs(1))
 	}
 
+	func test__init__struct_computedValue__computedValueIsNotIncludedInInit() async throws {
+		assertMacroExpansion("""
+		@Init()
+		struct Foo {
+			var a: String
+			var b: Int { 1 }
+		}
+		""",
+		expandedSource: """
+		struct Foo {
+			var a: String
+			var b: Int { 1 }
+
+			init(a: String) {
+				self.a = a
+			}
+		}
+		""", macros: testMacros, indentationWidth: .tabs(1))
+	}
+
 	func test__init__struct_moreMemberTypes_defaultAccess__initIsInternal_onlyVarsAreIncluded() async throws {
 		assertMacroExpansion("""
 		@Init()
@@ -174,7 +194,6 @@ final class InitMacroTests: XCTestCase {
 		}
 		""", macros: testMacros, indentationWidth: .tabs(1))
 	}
-
 
 	func test__init__class_openAccess__initIsPublic() async throws {
 		assertMacroExpansion("""
