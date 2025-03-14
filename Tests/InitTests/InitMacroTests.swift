@@ -24,15 +24,13 @@ final class swift_macro_public_initTests: XCTestCase {
 		struct Foo {
 			var a: String
 			var b: Int
-		}
 
-		extension Foo {
 			init(a: String, b: Int) {
 				self.a = a
 				self.b = b
 			}
 		}
-		""", macros: testMacros)
+		""", macros: testMacros, indentationWidth: .tabs(1))
 	}
 
 	func test__init__struct_moreMemberTypes_defaultAccess__initIsInternal_onlyVarsAreIncluded() async throws {
@@ -58,15 +56,13 @@ final class swift_macro_public_initTests: XCTestCase {
 			enum D {
 				case d
 			}
-		}
 
-		extension Foo {
 			init(a: String, b: Int) {
 				self.a = a
 				self.b = b
 			}
 		}
-		""", macros: testMacros)
+		""", macros: testMacros, indentationWidth: .tabs(1))
 	}
 }
 #else

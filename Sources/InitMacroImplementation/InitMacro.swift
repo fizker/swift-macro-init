@@ -9,10 +9,10 @@ public struct InitMacro {
 		members = declaration.memberBlock.members.compactMap(Member.init(_:))
 	}
 
-	public var initFunction: SyntaxNodeString {
+	public var initFunction: DeclSyntax {
 		"""
 		init(\(raw: members.map { "\($0.name): \($0.type)" }.joined(separator: ", "))) {
-			\(raw: members.map { "\tself.\($0.name) = \($0.name)" }.joined(separator: "\n\t"))
+			\(raw: members.map { "self.\($0.name) = \($0.name)" }.joined(separator: "\n"))
 		}
 		"""
 	}
@@ -67,21 +67,15 @@ extension InitMacro.Member {
 	}
 }
 
-extension InitMacro: ExtensionMacro {
+extension InitMacro: MemberMacro {
 	public static func expansion(
 		of node: AttributeSyntax,
-		attachedTo declaration: some DeclGroupSyntax,
-		providingExtensionsOf type: some TypeSyntaxProtocol,
-		conformingTo protocols: [TypeSyntax],
+		providingMembersOf declaration: some DeclGroupSyntax,
+		conformingTo: [TypeSyntax],
 		in context: some MacroExpansionContext
-	) throws -> [ExtensionDeclSyntax] {
+	) throws -> [DeclSyntax] {
 		let v = try InitMacro(declaration: declaration)
-		let initExtension = try ExtensionDeclSyntax("""
-		extension \(type.trimmed) {
-			\(v.initFunction)
-		}
-		""")
 
-		return [initExtension]
+		return [v.initFunction]
 	}
 }
