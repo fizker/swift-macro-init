@@ -30,6 +30,13 @@ let package = Package(
 			]
 		),
 
+		.executableTarget(
+			name: "Consumer",
+			dependencies: [
+				"InitMacro",
+			]
+		),
+
 		.target(name: "InitMacro", dependencies: ["InitMacroImplementation"]),
 
 		.testTarget(
