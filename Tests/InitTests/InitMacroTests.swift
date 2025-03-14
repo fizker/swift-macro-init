@@ -106,6 +106,33 @@ final class InitMacroTests: XCTestCase {
 		""", macros: testMacros, indentationWidth: .tabs(1))
 	}
 
+	func test__init__struct_memberHasImplicitType__initParameterCorrectlyIncludesMember() async throws {
+		assertMacroExpansion("""
+		@Init()
+		struct Foo {
+			var a = ""
+			var b = 1
+			var c = false
+			var d = 2.3
+		}
+		""",
+		expandedSource: """
+		struct Foo {
+			var a = ""
+			var b = 1
+			var c = false
+			var d = 2.3
+
+			init(a: String = "", b: Int = 1, c: Bool = false, d: Double = 2.3) {
+				self.a = a
+				self.b = b
+				self.c = c
+				self.d = d
+			}
+		}
+		""", macros: testMacros, indentationWidth: .tabs(1))
+	}
+
 	func test__init__struct_publicAccess__initIsPublic() async throws {
 		assertMacroExpansion("""
 		@Init()
