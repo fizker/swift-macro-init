@@ -4,7 +4,7 @@ import PackageDescription
 import CompilerPluginSupport
 
 let package = Package(
-	name: "swift-macro-public-init",
+	name: "swift-macro-init",
 	platforms: [
 		.iOS(.v13),
 		.macCatalyst(.v13),
@@ -14,8 +14,8 @@ let package = Package(
 	],
 	products: [
 		.library(
-			name: "PublicInitMacro",
-			targets: ["PublicInitMacro"]
+			name: "InitMacro",
+			targets: ["InitMacro"]
 		),
 	],
 	dependencies: [
@@ -23,19 +23,19 @@ let package = Package(
 	],
 	targets: [
 		.macro(
-			name: "PublicInitMacros",
+			name: "InitMacroImplementation",
 			dependencies: [
 				.product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
 				.product(name: "SwiftCompilerPlugin", package: "swift-syntax")
 			]
 		),
 
-		.target(name: "PublicInitMacro", dependencies: ["PublicInitMacros"]),
+		.target(name: "InitMacro", dependencies: ["InitMacroImplementation"]),
 
 		.testTarget(
-			name: "PublicInitTests",
+			name: "InitTests",
 			dependencies: [
-				"PublicInitMacros",
+				"InitMacroImplementation",
 				.product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
 			]
 		),
