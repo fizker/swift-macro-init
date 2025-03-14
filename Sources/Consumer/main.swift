@@ -29,3 +29,9 @@ public actor FooA {
 		""
 	}
 }
+
+@Init
+public class FooWithLet {
+	let a: String = ""
+	var b: Int = 1
+}

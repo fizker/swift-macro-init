@@ -41,6 +41,12 @@ extension InitMacro.Member {
 		var hasName = false
 		var hasType = false
 
+		enum `Type` {
+			case `let`
+			case `var`
+		}
+		var varType: `Type`?
+
 		name = ""
 		type = ""
 
@@ -50,6 +56,8 @@ extension InitMacro.Member {
 
 			guard keyword == .let || keyword == .var
 			else { continue }
+
+			varType = keyword == .let ? .let : .var
 
 			break
 		}
@@ -84,6 +92,9 @@ extension InitMacro.Member {
 			self.defaultValue = defaultValue
 			break
 		}
+
+		guard defaultValue == nil || varType == .var
+		else { return nil }
 
 		guard hasName && hasType
 		else { return nil }

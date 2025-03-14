@@ -11,7 +11,7 @@ import InitMacroImplementation
 let testMacros: [String: Macro.Type] = [
 	"Init": InitMacro.self,
 ]
-final class swift_macro_public_initTests: XCTestCase {
+final class InitMacroTests: XCTestCase {
 	func test__init__struct_simple_defaultAccess__initIsInternal_allFieldsIncluded() async throws {
 		assertMacroExpansion("""
 		@Init()
@@ -85,9 +85,29 @@ final class swift_macro_public_initTests: XCTestCase {
 		}
 		""", macros: testMacros, indentationWidth: .tabs(1))
 	}
+
+	func test__init__struct_letHasDefaultValue__initIsSkippingMember() async throws {
+		assertMacroExpansion("""
+		@Init()
+		struct Foo {
+			let a: String = ""
+			var b: Int = 1
+		}
+		""",
+		expandedSource: """
+		struct Foo {
+			let a: String = ""
+			var b: Int = 1
+
+			init(b: Int = 1) {
+				self.b = b
+			}
+		}
+		""", macros: testMacros, indentationWidth: .tabs(1))
+	}
 }
 #else
-final class swift_macro_public_initTests: XCTestCase {
+final class InitMacroTests: XCTestCase {
 	func testMacro() throws {
 		throw XCTSkip("macros are only supported when running tests for the host platform")
 	}
