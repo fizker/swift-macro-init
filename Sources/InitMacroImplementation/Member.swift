@@ -31,6 +31,10 @@ extension Member {
 		type = try inferType(binding)
 		defaultValue = binding.initializer?.value.trimmedDescription
 
+		if defaultValue == nil && type.type.is(OptionalTypeSyntax.self) {
+			defaultValue = "nil"
+		}
+
 		if defaultValue != nil && varType == .let {
 			return nil
 		}

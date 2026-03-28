@@ -75,8 +75,8 @@ struct Tests {
 			var a: Int?
 		}
 
-//		let instance1 = Foo()
-//		#expect(instance1.a == 1)
+		let instance1 = Foo()
+		#expect(instance1.a == nil)
 
 		let instance2 = Foo(a: 2)
 		#expect(instance2.a == 2)

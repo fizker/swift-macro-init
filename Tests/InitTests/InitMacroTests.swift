@@ -215,6 +215,33 @@ final class InitMacroTests: XCTestCase {
 		}
 		""", macros: testMacros, indentationWidth: .tabs(1))
 	}
+
+	func test__init__optional__initHasDefaultValueAsNil() async throws {
+		assertMacroExpansion("""
+		@Init
+		class Foo {
+			var a: Int?
+			var a2: Int? = 1
+			var b: String?
+			var b2: String? = "foo"
+		}
+		""",
+		expandedSource: """
+		class Foo {
+			var a: Int?
+			var a2: Int? = 1
+			var b: String?
+			var b2: String? = "foo"
+
+			init(a: Int? = nil, a2: Int? = 1, b: String? = nil, b2: String? = "foo") {
+				self.a = a
+				self.a2 = a2
+				self.b = b
+				self.b2 = b2
+			}
+		}
+		""", macros: testMacros, indentationWidth: .tabs(1))
+	}
 }
 #else
 final class InitMacroTests: XCTestCase {
