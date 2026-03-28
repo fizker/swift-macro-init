@@ -30,8 +30,8 @@ let package = Package(
 			]
 		),
 
-		.executableTarget(
-			name: "Consumer",
+		.testTarget(
+			name: "ConsumerTests",
 			dependencies: [
 				"InitMacro",
 			]
