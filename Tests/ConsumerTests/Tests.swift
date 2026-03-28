@@ -84,4 +84,18 @@ struct Tests {
 		let instance3 = Foo(a: nil)
 		#expect(instance3.a == nil)
 	}
+
+	@Test
+	func generatedInit__optionalProperties_optionForExplicitDefaultsOnly__allPropertiesMustBeSet() async throws {
+		@Init(optionals: .explicitDefault)
+		class Foo {
+			var a: Int?
+		}
+
+		let instance2 = Foo(a: 2)
+		#expect(instance2.a == 2)
+
+		let instance3 = Foo(a: nil)
+		#expect(instance3.a == nil)
+	}
 }

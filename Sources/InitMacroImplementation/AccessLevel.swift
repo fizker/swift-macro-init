@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-public enum AccessLevel: String {
+enum AccessLevel: String {
 	case automatic
 	case `public`
 	case `internal`

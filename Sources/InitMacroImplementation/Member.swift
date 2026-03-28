@@ -17,7 +17,7 @@ struct Member {
 }
 
 extension Member {
-	init?(_ member: MemberBlockItemListSyntax.Element) throws {
+	init?(_ member: MemberBlockItemListSyntax.Element, optionals: OptionalOptions) throws {
 		guard
 			let varDecl = member.decl.as(VariableDeclSyntax.self),
 			let varType = VariableType(varDecl.bindingSpecifier),
@@ -31,7 +31,7 @@ extension Member {
 		type = try inferType(binding)
 		defaultValue = binding.initializer?.value.trimmedDescription
 
-		if defaultValue == nil && type.type.is(OptionalTypeSyntax.self) {
+		if defaultValue == nil && optionals == .implicitDefault && type.type.is(OptionalTypeSyntax.self) {
 			defaultValue = "nil"
 		}
 

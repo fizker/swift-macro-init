@@ -4,12 +4,18 @@ import SwiftSyntaxMacros
 
 public struct InitMacro {
 	var access: DeclModifierSyntax?
+	var optionals: OptionalOptions
 	var members: [Member]
 
-	init(access: AccessLevel, declaration: some DeclGroupSyntax) throws {
+	init(
+		access: AccessLevel,
+		optionals: OptionalOptions,
+		declaration: some DeclGroupSyntax,
+	) throws {
 		self.access = access.keyword.map { DeclModifierSyntax(name: TokenSyntax.keyword($0)) } ?? Self.findAccess(declaration)
 		self.access?.trailingTrivia = .space
-		members = try declaration.memberBlock.members.compactMap(Member.init(_:))
+		self.optionals = optionals
+		members = try declaration.memberBlock.members.compactMap { try Member($0, optionals: optionals) }
 	}
 
 	public var initFunction: DeclSyntax {
@@ -53,18 +59,24 @@ extension InitMacro: MemberMacro {
 		conformingTo: [TypeSyntax],
 		in context: some MacroExpansionContext
 	) throws -> [DeclSyntax] {
-		let v = try InitMacro(access: find("access", in: node.arguments) ?? .automatic, declaration: declaration)
+		let v = try InitMacro(
+			access: find("access", in: node.arguments) ?? .automatic,
+			optionals: find("optionals", in: node.arguments) ?? .implicitDefault,
+			declaration: declaration,
+		)
 
 		return [v.initFunction]
 	}
 
-	private static func find(_ label: String, in arguments: AttributeSyntax.Arguments?) -> AccessLevel? {
+	private static func find<Type: RawRepresentable>(_ label: String, in arguments: AttributeSyntax.Arguments?) -> Type?
+		where Type.RawValue == String
+	{
 		guard
 			let arguments = arguments?.as(LabeledExprListSyntax.self),
 			let arg = arguments.first(where: { $0.label?.text == label }),
 			let memberAccess = arg.expression.as(MemberAccessExprSyntax.self)
 		else { return nil }
 
-		return AccessLevel(rawValue: memberAccess.declName.baseName.text)
+		return Type(rawValue: memberAccess.declName.baseName.text)
 	}
 }

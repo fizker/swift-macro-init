@@ -242,7 +242,39 @@ final class InitMacroTests: XCTestCase {
 		}
 		""", macros: testMacros, indentationWidth: .tabs(1))
 	}
-}
+
+	func test__init__optional_explicitDefaultIsSet__initHasDefaultValueAsNil() async throws {
+		assertMacroExpansion("""
+		@Init(optionals: .explicitDefault)
+		class Foo {
+			var a: Int?
+			var a2: Int? = 1
+			var a3: Int? = nil
+			var b: String?
+			var b2: String? = "foo"
+			var b3: String? = nil
+		}
+		""",
+		expandedSource: """
+		class Foo {
+			var a: Int?
+			var a2: Int? = 1
+			var a3: Int? = nil
+			var b: String?
+			var b2: String? = "foo"
+			var b3: String? = nil
+
+			init(a: Int?, a2: Int? = 1, a3: Int? = nil, b: String?, b2: String? = "foo", b3: String? = nil) {
+				self.a = a
+				self.a2 = a2
+				self.a3 = a3
+				self.b = b
+				self.b2 = b2
+				self.b3 = b3
+			}
+		}
+		""", macros: testMacros, indentationWidth: .tabs(1))
+	}}
 #else
 final class InitMacroTests: XCTestCase {
 	func testMacro() throws {
