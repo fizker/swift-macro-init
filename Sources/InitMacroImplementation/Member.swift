@@ -35,8 +35,21 @@ extension Member {
 			defaultValue = "nil"
 		}
 
-		if defaultValue != nil && varType == .let {
+		if varType == .let && defaultValue != nil {
 			return nil
+		}
+
+		if let defaultValueAttribute = varDecl.attributes.first(where: { $0.as(AttributeSyntax.self)?.attributeName.as(IdentifierTypeSyntax.self)?.description == "DefaultValue" }) {
+			let customKeyValue = defaultValueAttribute.as(AttributeSyntax.self)!
+				.arguments!.as(LabeledExprListSyntax.self)!
+				.first!
+				.expression
+
+			if defaultValue == nil {
+				defaultValue = customKeyValue.description
+			} else {
+				// error is raised by DefaultValueMacro
+			}
 		}
 	}
 }

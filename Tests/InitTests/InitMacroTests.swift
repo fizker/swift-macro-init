@@ -10,6 +10,7 @@ import InitMacroImplementation
 
 let testMacros: [String: Macro.Type] = [
 	"Init": InitMacro.self,
+	"DefaultValue": DefaultValueMacro.self,
 ]
 final class InitMacroTests: XCTestCase {
 	func test__init__struct_simple_defaultAccess__initIsInternal_allFieldsIncluded() async throws {
@@ -124,6 +125,51 @@ final class InitMacroTests: XCTestCase {
 			}
 		}
 		""", macros: testMacros, indentationWidth: .tabs(1))
+	}
+
+	func test__init__letHasDefaultValueAttribute_varHasDefaultValueAttribute__initIsIncludingMember() async throws {
+		assertMacroExpansion("""
+		@Init
+		struct Foo {
+			@DefaultValue("")
+			let a: String
+			@DefaultValue(1)
+			var b: Int
+		}
+		""",
+		expandedSource: """
+		struct Foo {
+			let a: String
+			var b: Int
+
+			init(a: String = "", b: Int = 1) {
+				self.a = a
+				self.b = b
+			}
+		}
+		""", macros: testMacros, indentationWidth: .tabs(1))
+	}
+
+	func test__init__varHaveDefaultValue_varHasDefaultValueAttribute__errorIsShown() async throws {
+		assertMacroExpansion("""
+		@Init
+		struct Foo {
+			@DefaultValue(2)
+			var a: Int = 1
+		}
+		""",
+		expandedSource: """
+		struct Foo {
+			var a: Int = 1
+
+			init(a: Int = 1) {
+				self.a = a
+			}
+		}
+		""",
+		diagnostics: [
+			DiagnosticSpec(message: "@DefaultValue is not allowed if the property already have a value.", line: 3, column: 2),
+		], macros: testMacros, indentationWidth: .tabs(1))
 	}
 
 	func test__init__struct_memberHasImplicitType__initParameterCorrectlyIncludesMember() async throws {

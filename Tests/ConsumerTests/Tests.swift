@@ -55,7 +55,8 @@ struct Tests {
 	func generatedInit__letProperties_defaultValues__allPropertiesCanBeSet_defaultValuesAreRespected() async throws {
 		@Init
 		class Foo {
-			let a: Int = 1
+			@DefaultValue(1)
+			let a: Int
 			var b: String = "foo"
 		}
 
@@ -63,9 +64,9 @@ struct Tests {
 		#expect(instance1.a == 1)
 		#expect(instance1.b == "foo")
 
-//		let instance2 = Foo(a: 2, b: "bar")
-//		#expect(instance2.a == 2)
-//		#expect(instance2.b == "bar")
+		let instance2 = Foo(a: 2, b: "bar")
+		#expect(instance2.a == 2)
+		#expect(instance2.b == "bar")
 	}
 
 	@Test
