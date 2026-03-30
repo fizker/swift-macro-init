@@ -9,11 +9,11 @@ public struct DefaultValueMacro: PeerMacro {
 	) throws -> [SwiftSyntax.DeclSyntax] {
 		guard
 			let varDecl = declaration.as(VariableDeclSyntax.self),
-			let binding = varDecl.bindings.first,
-
-			// Computed vars have this set
-			binding.accessorBlock == nil
+			let binding = varDecl.bindings.first
 		else { return [] }
+
+		guard !isComputed(binding)
+		else { throw MacroExpansionErrorMessage("Computed values cannot have a default") }
 
 		let defaultValue = binding.initializer?.value.trimmedDescription
 

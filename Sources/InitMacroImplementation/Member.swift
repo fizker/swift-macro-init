@@ -22,9 +22,7 @@ extension Member {
 			let varDecl = member.decl.as(VariableDeclSyntax.self),
 			let varType = VariableType(varDecl.bindingSpecifier),
 			let binding = varDecl.bindings.first,
-
-			// Computed vars have this set
-			binding.accessorBlock == nil
+			!isComputed(binding)
 		else { return nil }
 
 		name = binding.pattern.trimmed
@@ -52,6 +50,23 @@ extension Member {
 			}
 		}
 	}
+}
+
+func isComputed(_ binding: PatternBindingSyntax) -> Bool {
+	// Computed vars have this set
+	guard let accessor = binding.accessorBlock
+	else { return false }
+
+	// Inline-get (i.e. var a: Int { 1 })
+	guard let accessorList = accessor.accessors.as(AccessorDeclListSyntax.self)
+	else { return true }
+
+	// Explicit get (i.e. var a: Int { get { 1 } })
+	guard !accessorList.contains(where: { $0.accessorSpecifier.tokenKind == .keyword(.get) })
+	else { return true }
+
+	// If there is no get, this cannot be computed
+	return false
 }
 
 func inferType(_ binding: PatternBindingSyntax) throws -> TypeAnnotationSyntax {

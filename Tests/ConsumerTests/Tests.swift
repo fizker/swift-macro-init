@@ -99,4 +99,28 @@ struct Tests {
 		let instance3 = Foo(a: nil)
 		#expect(instance3.a == nil)
 	}
+
+	@Test
+	func generatedInit__propertyIsComputed__itIsOmittedInInit() async throws {
+		@Init
+		struct Foo {
+			var a: Int {
+				get { 1 }
+			}
+		}
+
+		_ = Foo()
+	}
+
+	@Test
+	func generatedInit__propertyHaveDidSet__itIsIncludedInInit() async throws {
+		@Init
+		struct Foo {
+			var a: Int {
+				didSet {}
+			}
+		}
+
+		_ = Foo(a: 1)
+	}
 }

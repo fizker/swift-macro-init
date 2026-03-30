@@ -34,21 +34,46 @@ final class InitMacroTests: XCTestCase {
 		""", macros: testMacros, indentationWidth: .tabs(1))
 	}
 
-	func test__init__struct_computedValue__computedValueIsNotIncludedInInit() async throws {
+	func test__init__propertyHaveDidSetBlock__initIsInternal_allFieldsIncluded() async throws {
 		assertMacroExpansion("""
 		@Init()
 		struct Foo {
 			var a: String
-			var b: Int { 1 }
+			var b: Int {
+				didSet {}
+			}
 		}
 		""",
 		expandedSource: """
 		struct Foo {
 			var a: String
+			var b: Int {
+				didSet {}
+			}
+
+			init(a: String, b: Int) {
+				self.a = a
+				self.b = b
+			}
+		}
+		""", macros: testMacros, indentationWidth: .tabs(1))
+	}
+
+	func test__init__struct_computedValue__computedValueIsNotIncludedInInit() async throws {
+		assertMacroExpansion("""
+		@Init()
+		struct Foo {
+			var a: String { get { "" } }
+			var b: Int { 1 }
+		}
+		""",
+		expandedSource: """
+		struct Foo {
+			var a: String { get { "" } }
 			var b: Int { 1 }
 
-			init(a: String) {
-				self.a = a
+			init() {
+
 			}
 		}
 		""", macros: testMacros, indentationWidth: .tabs(1))
