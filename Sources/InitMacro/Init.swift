@@ -3,3 +3,6 @@ public macro Init(access: AccessLevel = .automatic, optionals: OptionalOptions =
 
 @attached(peer)
 public macro DefaultInitValue(_ value: Any) = #externalMacro(module: "InitMacroImplementation", type: "DefaultInitValueMacro")
+
+@attached(peer)
+public macro OmitFromInitMacro() = #externalMacro(module: "InitMacroImplementation", type: "OmitFromInitMacroMacro")

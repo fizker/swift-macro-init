@@ -1,6 +1,10 @@
 import SwiftSyntax
 import SwiftSyntaxMacros
 
+protocol NamedAttachedMacro {
+	static var name: String { get }
+}
+
 struct Member {
 	var name: PatternSyntax
 	var type: TypeAnnotationSyntax
@@ -25,6 +29,9 @@ extension Member {
 			!isComputed(binding)
 		else { return nil }
 
+		guard nil == varDecl.attribute(of: OmitFromInitMacro.self)
+		else { return nil }
+
 		name = binding.pattern.trimmed
 		type = try inferType(binding)
 		defaultValue = binding.initializer?.value.trimmedDescription
@@ -37,11 +44,8 @@ extension Member {
 			return nil
 		}
 
-		if let defaultValueAttribute = varDecl.attributes
-			.first(where: { $0.as(AttributeSyntax.self)?.attributeName
-			.as(IdentifierTypeSyntax.self)?.description == DefaultInitValueMacro.name })
-		{
-			let customKeyValue = defaultValueAttribute.as(AttributeSyntax.self)!
+		if let defaultValueAttribute = varDecl.attribute(of: DefaultInitValueMacro.self) {
+			let customKeyValue = defaultValueAttribute
 				.arguments!.as(LabeledExprListSyntax.self)!
 				.first!
 				.expression
@@ -52,6 +56,16 @@ extension Member {
 				// error is raised by DefaultValueMacro
 			}
 		}
+	}
+}
+
+extension VariableDeclSyntax {
+	func attribute(of type: (some NamedAttachedMacro).Type) -> AttributeSyntax? {
+		attributes
+			.compactMap { $0.as(AttributeSyntax.self) }
+			.first {
+				$0.attributeName.as(IdentifierTypeSyntax.self)?.description == type.name
+			}
 	}
 }
 

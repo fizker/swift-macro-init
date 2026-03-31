@@ -1,8 +1,8 @@
 import SwiftSyntax
 import SwiftSyntaxMacros
 
-public struct DefaultInitValueMacro: PeerMacro, NamedAttachedMacro {
-	public static let name = "DefaultInitValue"
+public struct OmitFromInitMacro: PeerMacro, NamedAttachedMacro {
+	public static let name = "OmitFromInit"
 
 	public static func expansion(
 		of node: SwiftSyntax.AttributeSyntax,
@@ -14,13 +14,10 @@ public struct DefaultInitValueMacro: PeerMacro, NamedAttachedMacro {
 			let binding = varDecl.bindings.first
 		else { return [] }
 
-		guard !isComputed(binding)
-		else { throw MacroExpansionErrorMessage("Computed values cannot have a default") }
-
 		let defaultValue = binding.initializer?.value.trimmedDescription
-		guard defaultValue == nil
+		guard defaultValue != nil
 		else {
-			throw MacroExpansionErrorMessage("@DefaultInitValue is not allowed if the property already have a value.")
+			throw MacroExpansionErrorMessage("Omitted properties require a default value.")
 		}
 
 		return []

@@ -6,5 +6,6 @@ struct InitMacroPlugin: CompilerPlugin {
 	let providingMacros: [Macro.Type] = [
 		InitMacro.self,
 		DefaultInitValueMacro.self,
+		OmitFromInitMacro.self,
 	]
 }

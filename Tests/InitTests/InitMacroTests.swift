@@ -11,6 +11,7 @@ import InitMacroImplementation
 let testMacros: [String: Macro.Type] = [
 	"Init": InitMacro.self,
 	DefaultInitValueMacro.name: DefaultInitValueMacro.self,
+	OmitFromInitMacro.name: OmitFromInitMacro.self,
 ]
 final class InitMacroTests: XCTestCase {
 	func test__init__struct_simple_defaultAccess__initIsInternal_allFieldsIncluded() async throws {
@@ -130,6 +131,54 @@ final class InitMacroTests: XCTestCase {
 			}
 		}
 		""", macros: testMacros, indentationWidth: .tabs(1))
+	}
+
+	func test__init__struct_membersHasDefaultValues_membersAreOmitted__membersAreOmitted() async throws {
+		assertMacroExpansion("""
+		@Init()
+		struct Foo {
+			@OmitFromInit
+			var a: String = ""
+			@OmitFromInit
+			var b: Int = 1
+		}
+		""",
+		expandedSource: """
+		struct Foo {
+			var a: String = ""
+			var b: Int = 1
+
+			init() {
+
+			}
+		}
+		""", macros: testMacros, indentationWidth: .tabs(1))
+	}
+
+	func test__init__struct_membersHaveNoDefaultValues_membersAreOmitted__diagnosticRaised() async throws {
+		assertMacroExpansion("""
+		@Init()
+		struct Foo {
+			@OmitFromInit
+			let a: String
+			@OmitFromInit
+			var b: Int
+		}
+		""",
+		expandedSource: """
+		struct Foo {
+			let a: String
+			var b: Int
+
+			init() {
+
+			}
+		}
+		""",
+		diagnostics: [
+			DiagnosticSpec(message: "Omitted properties require a default value.", line: 3, column: 2),
+			DiagnosticSpec(message: "Omitted properties require a default value.", line: 5, column: 2),
+		], macros: testMacros, indentationWidth: .tabs(1))
 	}
 
 	func test__init__struct_letHasDefaultValue__initIsSkippingMember() async throws {
