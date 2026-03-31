@@ -10,7 +10,7 @@ import InitMacroImplementation
 
 let testMacros: [String: Macro.Type] = [
 	"Init": InitMacro.self,
-	"DefaultValue": DefaultValueMacro.self,
+	DefaultInitValueMacro.name: DefaultInitValueMacro.self,
 ]
 final class InitMacroTests: XCTestCase {
 	func test__init__struct_simple_defaultAccess__initIsInternal_allFieldsIncluded() async throws {
@@ -156,9 +156,9 @@ final class InitMacroTests: XCTestCase {
 		assertMacroExpansion("""
 		@Init
 		struct Foo {
-			@DefaultValue("")
+			@DefaultInitValue("")
 			let a: String
-			@DefaultValue(1)
+			@DefaultInitValue(1)
 			var b: Int
 		}
 		""",
@@ -179,7 +179,7 @@ final class InitMacroTests: XCTestCase {
 		assertMacroExpansion("""
 		@Init
 		struct Foo {
-			@DefaultValue(2)
+			@DefaultInitValue(2)
 			var a: Int = 1
 		}
 		""",
@@ -193,7 +193,7 @@ final class InitMacroTests: XCTestCase {
 		}
 		""",
 		diagnostics: [
-			DiagnosticSpec(message: "@DefaultValue is not allowed if the property already have a value.", line: 3, column: 2),
+			DiagnosticSpec(message: "@DefaultInitValue is not allowed if the property already have a value.", line: 3, column: 2),
 		], macros: testMacros, indentationWidth: .tabs(1))
 	}
 
@@ -345,7 +345,8 @@ final class InitMacroTests: XCTestCase {
 			}
 		}
 		""", macros: testMacros, indentationWidth: .tabs(1))
-	}}
+	}
+}
 #else
 final class InitMacroTests: XCTestCase {
 	func testMacro() throws {

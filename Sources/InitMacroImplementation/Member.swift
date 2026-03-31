@@ -37,7 +37,10 @@ extension Member {
 			return nil
 		}
 
-		if let defaultValueAttribute = varDecl.attributes.first(where: { $0.as(AttributeSyntax.self)?.attributeName.as(IdentifierTypeSyntax.self)?.description == "DefaultValue" }) {
+		if let defaultValueAttribute = varDecl.attributes
+			.first(where: { $0.as(AttributeSyntax.self)?.attributeName
+			.as(IdentifierTypeSyntax.self)?.description == DefaultInitValueMacro.name })
+		{
 			let customKeyValue = defaultValueAttribute.as(AttributeSyntax.self)!
 				.arguments!.as(LabeledExprListSyntax.self)!
 				.first!

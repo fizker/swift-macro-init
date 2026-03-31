@@ -1,7 +1,9 @@
 import SwiftSyntax
 import SwiftSyntaxMacros
 
-public struct DefaultValueMacro: PeerMacro {
+public struct DefaultInitValueMacro: PeerMacro {
+	public static let name = "DefaultInitValue"
+
 	public static func expansion(
 		of node: SwiftSyntax.AttributeSyntax,
 		providingPeersOf declaration: some SwiftSyntax.DeclSyntaxProtocol,
@@ -16,12 +18,9 @@ public struct DefaultValueMacro: PeerMacro {
 		else { throw MacroExpansionErrorMessage("Computed values cannot have a default") }
 
 		let defaultValue = binding.initializer?.value.trimmedDescription
-
-		if let _ = varDecl.attributes.first(where: { $0.as(AttributeSyntax.self)?.attributeName.as(IdentifierTypeSyntax.self)?.description == "DefaultValue" }) {
-			guard defaultValue == nil
-			else {
-				throw MacroExpansionErrorMessage("@DefaultValue is not allowed if the property already have a value.")
-			}
+		guard defaultValue == nil
+		else {
+			throw MacroExpansionErrorMessage("@DefaultInitValue is not allowed if the property already have a value.")
 		}
 
 		return []

@@ -55,7 +55,7 @@ struct Tests {
 	func generatedInit__letProperties_defaultValues__allPropertiesCanBeSet_defaultValuesAreRespected() async throws {
 		@Init
 		class Foo {
-			@DefaultValue(1)
+			@DefaultInitValue(1)
 			let a: Int
 			var b: String = "foo"
 		}
