@@ -273,7 +273,7 @@ final class InitMacroTests: XCTestCase {
 		""", macros: testMacros, indentationWidth: .tabs(1))
 	}
 
-	func test__init__struct_memberHasImplicitArrayType__initParameterCorrectlyIncludesMember() async throws {
+	func test__init__struct_memberHasImplicitArrayType_elementsAreBasicTypes__initParameterCorrectlyIncludesMember() async throws {
 		assertMacroExpansion("""
 		@Init()
 		struct Foo {
@@ -291,6 +291,33 @@ final class InitMacroTests: XCTestCase {
 			var d = [2.3]
 
 			init(a: [String] = [""], b: [Int] = [1], c: [Bool] = [false], d: [Double] = [2.3]) {
+				self.a = a
+				self.b = b
+				self.c = c
+				self.d = d
+			}
+		}
+		""", macros: testMacros, indentationWidth: .tabs(1))
+	}
+
+	func test__init__struct_memberHasImplicitDictionaryType_elementsAreBasicTypes__initParameterCorrectlyIncludesMember() async throws {
+		assertMacroExpansion("""
+		@Init()
+		struct Foo {
+			var a = ["":""]
+			var b = [1:false]
+			var c = [2.3:false]
+			var d = [2.3:""]
+		}
+		""",
+		expandedSource: """
+		struct Foo {
+			var a = ["":""]
+			var b = [1:false]
+			var c = [2.3:false]
+			var d = [2.3:""]
+
+			init(a: [String: String] = ["": ""], b: [Int: Bool] = [1: false], c: [Double: Bool] = [2.3: false], d: [Double: String] = [2.3: ""]) {
 				self.a = a
 				self.b = b
 				self.c = c

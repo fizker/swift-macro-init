@@ -117,5 +117,18 @@ func inferType(_ value: ExprSyntax) throws -> String {
 		}
 	}
 
+	if let dict = value.as(DictionaryExprSyntax.self), let elements = dict.content.as(DictionaryElementListSyntax.self) {
+		var keyIdents = Set<String>()
+		var valueIdents = Set<String>()
+		for element in elements {
+			keyIdents.insert(try inferType(element.key))
+			valueIdents.insert(try inferType(element.value))
+		}
+
+		if keyIdents.count == 1 && valueIdents.count == 1, let key = keyIdents.first, let value = valueIdents.first {
+			return "[\(key):\(value)]"
+		}
+	}
+
 	throw MacroExpansionErrorMessage("Only basic implicit types can be inferred. All others should be specified explicitly.")
 }
