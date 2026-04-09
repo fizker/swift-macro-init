@@ -300,6 +300,39 @@ final class InitMacroTests: XCTestCase {
 		""", macros: testMacros, indentationWidth: .tabs(1))
 	}
 
+	func test__init__struct_memberHasComplexImplicitType__errorRaised() async throws {
+		assertMacroExpansion("""
+		struct Bar {
+			var foo: Int
+		}
+
+		func baz() -> Int {
+			return 1
+		}
+
+		@Init()
+		struct Foo {
+			var b = Bar(foo: 1)
+			var c = baz()
+		}
+		""",
+		expandedSource: """
+		struct Bar {
+			var foo: Int
+		}
+
+		func baz() -> Int {
+			return 1
+		}
+		struct Foo {
+			var b = Bar(foo: 1)
+			var c = baz()
+		}
+		""", diagnostics: [
+			DiagnosticSpec(message: "Only basic implicit types can be inferred. All others should be specified explicitly.", line: 9, column: 1),
+		], macros: testMacros, indentationWidth: .tabs(1))
+	}
+
 	func test__init__struct_publicAccess__initIsPublic() async throws {
 		assertMacroExpansion("""
 		@Init()

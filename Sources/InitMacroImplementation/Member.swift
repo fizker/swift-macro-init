@@ -117,5 +117,5 @@ func inferType(_ value: ExprSyntax) throws -> String {
 		}
 	}
 
-	throw MacroExpansionErrorMessage("Only basic literal types can be inferred. All others should be specified explicitly.")
+	throw MacroExpansionErrorMessage("Only basic implicit types can be inferred. All others should be specified explicitly.")
 }
