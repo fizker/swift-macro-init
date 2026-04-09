@@ -96,20 +96,26 @@ func inferType(_ binding: PatternBindingSyntax) throws -> TypeAnnotationSyntax {
 		throw MacroExpansionErrorMessage("Type information missing")
 	}
 
-	let ident: String
+	let ident = try inferType(initializer.value)
+	return TypeAnnotationSyntax(type: IdentifierTypeSyntax(name: .identifier(ident)))
+}
 
-	if initializer.value.is(IntegerLiteralExprSyntax.self) {
-		ident = "Int"
-	} else if initializer.value.is(BooleanLiteralExprSyntax.self) {
-		ident = "Bool"
-	} else if initializer.value.is(StringLiteralExprSyntax.self) {
-		ident = "String"
-	} else if initializer.value.is(FloatLiteralExprSyntax.self) {
+func inferType(_ value: ExprSyntax) throws -> String {
+	if value.is(IntegerLiteralExprSyntax.self) {
+		return "Int"
+	} else if value.is(BooleanLiteralExprSyntax.self) {
+		return "Bool"
+	} else if value.is(StringLiteralExprSyntax.self) {
+		return "String"
+	} else if value.is(FloatLiteralExprSyntax.self) {
 		// FloatLiteralExprSyntax is inferred as `Double` by the compiler.
-		ident = "Double"
-	} else {
-		throw MacroExpansionErrorMessage("Only basic literal types can be inferred. All others should be specified explicitly.")
+		return "Double"
+	} else if let a = value.as(ArrayExprSyntax.self) {
+		let idents = Set(try a.elements.map { try inferType($0.expression) })
+		if idents.count == 1, let ident = idents.first {
+			return "[\(ident)]"
+		}
 	}
 
-	return TypeAnnotationSyntax(type: IdentifierTypeSyntax(name: .identifier(ident)))
+	throw MacroExpansionErrorMessage("Only basic literal types can be inferred. All others should be specified explicitly.")
 }
