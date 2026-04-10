@@ -70,6 +70,17 @@ struct Tests {
 	}
 
 	@Test
+	func generatedInit__defaultValues_relyingOnLiteralExpression__defaultValuesAreRespected() async throws {
+		@Init
+		struct Foo {
+			@DefaultInitValue([1])
+			var bar: Set<Int>
+		}
+
+		_ = Foo()
+	}
+
+	@Test
 	func generatedInit__optionalProperties__allPropertiesCanBeSet_defaultValuesAreRespected() async throws {
 		@Init
 		class Foo {
