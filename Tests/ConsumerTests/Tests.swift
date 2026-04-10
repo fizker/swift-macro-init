@@ -87,6 +87,28 @@ struct Tests {
 	}
 
 	@Test
+	func generatedInit__propertyContainsBlock__funcIsEscaped() async throws {
+		@Init
+		struct Foo {
+			var a: (String) -> Int
+		}
+
+		let instance = Foo { $0.count }
+		#expect(instance.a("foo") == 3)
+	}
+
+	@Test
+	func generatedInit__propertyContainsArrayOfBlocks__funcIsEscaped() async throws {
+		@Init
+		struct Foo {
+			var a: [(String) -> Int]
+		}
+
+		let instance = Foo(a: [{ $0.count }])
+		#expect(instance.a.map { $0("foo") } == [3])
+	}
+
+	@Test
 	func generatedInit__optionalProperties_optionForExplicitDefaultsOnly__allPropertiesMustBeSet() async throws {
 		@Init(optionals: .explicitDefault)
 		class Foo {

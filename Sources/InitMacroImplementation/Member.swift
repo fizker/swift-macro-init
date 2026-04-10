@@ -88,6 +88,14 @@ func isComputed(_ binding: PatternBindingSyntax) -> Bool {
 
 func inferType(_ binding: PatternBindingSyntax) throws -> TypeAnnotationSyntax {
 	if let type = binding.typeAnnotation {
+		if let `func` = type.type.as(FunctionTypeSyntax.self) {
+			return TypeAnnotationSyntax(type: AttributedTypeSyntax(
+				// This empty list is necessary to avoid a deprecation warning
+				specifiers: [],
+				attributes: "@escaping",
+				baseType: `func`,
+			))
+		}
 		return type.trimmed
 	}
 
