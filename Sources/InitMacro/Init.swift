@@ -64,4 +64,4 @@ public macro DefaultInitValue(_ value: Any) = #externalMacro(module: "InitMacroI
 /// }
 /// ```
 @attached(peer)
-public macro OmitFromInitMacro() = #externalMacro(module: "InitMacroImplementation", type: "OmitFromInitMacroMacro")
+public macro OmitFromInit() = #externalMacro(module: "InitMacroImplementation", type: "OmitFromInitMacro")

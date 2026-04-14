@@ -35,6 +35,29 @@ final class InitMacroTests: XCTestCase {
 		""", macros: testMacros, indentationWidth: .tabs(1))
 	}
 
+	func test__init__struct_simple_defaultAccess_multipleVarsPerType__initIsInternal_allFieldsIncluded() async throws {
+		assertMacroExpansion("""
+		@Init()
+		struct Foo {
+			var a: String, b: Int
+			let c: String, d: Int
+		}
+		""",
+		expandedSource: """
+		struct Foo {
+			var a: String, b: Int
+			let c: String, d: Int
+
+			init(a: String, b: Int, c: String, d: Int) {
+				self.a = a
+				self.b = b
+				self.c = c
+				self.d = d
+			}
+		}
+		""", macros: testMacros, indentationWidth: .tabs(1))
+	}
+
 	func test__init__propertyIsFunc__funcIsMarkedAsEscaping() async throws {
 		assertMacroExpansion("""
 		@Init
@@ -237,6 +260,66 @@ final class InitMacroTests: XCTestCase {
 			init(a: String = "", b: Int = 1) {
 				self.a = a
 				self.b = b
+			}
+		}
+		""", macros: testMacros, indentationWidth: .tabs(1))
+	}
+
+	func test__init__letHasDefaultValueAttribute_varHasDefaultValueAttribute_multipleDeclarationsPerType__errorIsRaised() async throws {
+		XCTExpectFailure("assertMacroExpansion() gives different result than actually using the macro", issueMatcher: {
+			$0.compactDescription == """
+			failed - message does not match
+			–@DefaultInitValue can only be attached to a single property
+			+peer macro can only be applied to a single variable
+
+			"""
+		})
+
+		assertMacroExpansion("""
+		@Init
+		struct Foo {
+			@DefaultInitValue("")
+			let a: String, c: String
+			@DefaultInitValue(1)
+			var b: Int, d: Int
+		}
+		""",
+		expandedSource: """
+		struct Foo {
+			let a: String, c: String
+			var b: Int, d: Int
+		}
+		""", diagnostics: [
+			DiagnosticSpec(message: "@DefaultInitValue can only be attached to a single property", line: 3, column: 2),
+			DiagnosticSpec(message: "@DefaultInitValue can only be attached to a single property", line: 5, column: 2),
+			DiagnosticSpec(message: "@DefaultInitValue is ambivalent", line: 1, column: 1),
+		], macros: testMacros, indentationWidth: .tabs(1))
+	}
+
+	func test__init__varHasOmitFromInitAttribute_multipleDeclarationsPerType__allAreOmitted() async throws {
+		XCTExpectFailure("assertMacroExpansion() gives different result than actually using the macro", issueMatcher: {
+			$0.compactDescription == """
+			failed - Expected 0 diagnostics but received 1:
+			3:2: peer macro can only be applied to a single variable
+			"""
+		})
+
+		assertMacroExpansion("""
+		@Init
+		struct Foo {
+			@OmitFromInit
+			var a: String, c: String
+			var b: Int, d: Int
+		}
+		""",
+		expandedSource: """
+		struct Foo {
+			var a: String, c: String
+			var b: Int, d: Int
+
+			init(b: Int, d: Int) {
+				self.b = b
+				self.d = d
 			}
 		}
 		""", macros: testMacros, indentationWidth: .tabs(1))

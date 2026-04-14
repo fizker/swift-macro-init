@@ -21,12 +21,20 @@ struct Member {
 }
 
 extension Member {
-	init?(_ member: MemberBlockItemListSyntax.Element, optionals: OptionalOptions) throws {
+	static func members(for item: MemberBlockItemListSyntax.Element, optionals: OptionalOptions) throws -> [Member] {
 		guard
-			let varDecl = member.decl.as(VariableDeclSyntax.self),
-			let varType = VariableType(varDecl.bindingSpecifier),
-			let binding = varDecl.bindings.first,
-			!isComputed(binding)
+			let varDecl = item.decl.as(VariableDeclSyntax.self),
+			let varType = VariableType(varDecl.bindingSpecifier)
+		else { return [] }
+
+		guard varDecl.attribute(of: DefaultInitValueMacro.self) == nil || varDecl.bindings.count == 1
+		else { throw MacroExpansionErrorMessage("@\(DefaultInitValueMacro.name) is ambivalent") }
+
+		return try varDecl.bindings.compactMap { try Member(varDecl: varDecl, varType: varType, binding: $0, optionals: optionals) }
+	}
+
+	private init?(varDecl: VariableDeclSyntax, varType: VariableType, binding: PatternBindingSyntax, optionals: OptionalOptions) throws {
+		guard !isComputed(binding)
 		else { return nil }
 
 		guard nil == varDecl.attribute(of: OmitFromInitMacro.self)

@@ -14,13 +14,18 @@ public struct DefaultInitValueMacro: PeerMacro, NamedAttachedMacro {
 			let binding = varDecl.bindings.first
 		else { return [] }
 
+		guard varDecl.bindings.count == 1
+		else {
+			throw MacroExpansionErrorMessage("@\(name) can only be attached to a single property")
+		}
+
 		guard !isComputed(binding)
 		else { throw MacroExpansionErrorMessage("Computed values cannot have a default") }
 
 		let defaultValue = binding.initializer?.value.trimmedDescription
 		guard defaultValue == nil
 		else {
-			throw MacroExpansionErrorMessage("@DefaultInitValue is not allowed if the property already have a value.")
+			throw MacroExpansionErrorMessage("@\(name) is not allowed if the property already have a value.")
 		}
 
 		return []

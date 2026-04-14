@@ -15,7 +15,7 @@ public struct InitMacro {
 		self.access = access.keyword.map { DeclModifierSyntax(name: TokenSyntax.keyword($0)) } ?? Self.findAccess(declaration)
 		self.access?.trailingTrivia = .space
 		self.optionals = optionals
-		members = try declaration.memberBlock.members.compactMap { try Member($0, optionals: optionals) }
+		members = try declaration.memberBlock.members.flatMap { try Member.members(for: $0, optionals: optionals) }
 	}
 
 	public var initFunction: DeclSyntax {

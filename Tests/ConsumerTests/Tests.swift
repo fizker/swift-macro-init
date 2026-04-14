@@ -21,6 +21,23 @@ struct Tests {
 	}
 
 	@Test
+	func generatedInit__somePropertiesOnSingleDeclaration_functionPresent__propertiesIsSetThroughInit() async throws {
+		@Init
+		struct Foo {
+			var a: Int, b: String
+
+			func foo() -> String {
+				""
+			}
+		}
+
+		let instance = Foo(a: 1, b: "foo")
+		#expect(instance.a == 1)
+		#expect(instance.b == "foo")
+		#expect(instance.foo() == "")
+	}
+
+	@Test
 	func generatedInit__accessLevelGiven__propertiesAreSet() async throws {
 		@Init(access: .package)
 		struct Foo {
@@ -155,5 +172,32 @@ struct Tests {
 		}
 
 		_ = Foo(a: 1)
+	}
+
+	@Test
+	func generatedInit__onePropertyOmitted__otherPropertyIsAvailable() async throws {
+		@Init
+		struct Foo {
+			@OmitFromInit
+			var a: Int = 1
+			var b: String = ""
+		}
+
+		let instance = Foo(b: "foo")
+		#expect(instance.a == 1)
+		#expect(instance.b == "foo")
+	}
+
+	@Test
+	func generatedInit__allPropertiesOmitted__noPropertiesAvailable() async throws {
+		@Init
+		struct Foo {
+			@OmitFromInit
+			var a: Int = 1, b: String = ""
+		}
+
+		let instance = Foo()
+		#expect(instance.a == 1)
+		#expect(instance.b == "")
 	}
 }
