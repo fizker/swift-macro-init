@@ -200,4 +200,14 @@ struct Tests {
 		#expect(instance.a == 1)
 		#expect(instance.b == "")
 	}
+
+	@Test
+	func generatedInit__letHaveDefaultValueButNoType_typeIsComplex__varIsOmitted() async throws {
+		struct Bar {}
+
+		@Init
+		struct Foo {
+			let a = Bar()
+		}
+	}
 }

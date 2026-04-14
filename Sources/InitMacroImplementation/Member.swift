@@ -41,15 +41,16 @@ extension Member {
 		else { return nil }
 
 		name = binding.pattern.trimmed
-		type = try inferType(binding)
 		defaultValue = binding.initializer?.value.trimmedDescription
-
-		if defaultValue == nil && optionals == .implicitDefault && type.type.is(OptionalTypeSyntax.self) {
-			defaultValue = "nil"
-		}
 
 		if varType == .let && defaultValue != nil {
 			return nil
+		}
+
+		type = try inferType(binding)
+
+		if defaultValue == nil && optionals == .implicitDefault && type.type.is(OptionalTypeSyntax.self) {
+			defaultValue = "nil"
 		}
 
 		if let defaultValueAttribute = varDecl.attribute(of: DefaultInitValueMacro.self) {

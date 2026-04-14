@@ -296,6 +296,26 @@ final class InitMacroTests: XCTestCase {
 		], macros: testMacros, indentationWidth: .tabs(1))
 	}
 
+	func test__init__letHasDefaultValue_typeIsOmitted_typeIsComplex__letIsOmitted() async throws {
+		assertMacroExpansion("""
+		struct Bar {}
+
+		@Init
+		struct Foo {
+			let a = Bar()
+		}
+		""", expandedSource: """
+		struct Bar {}
+		struct Foo {
+			let a = Bar()
+
+			init() {
+
+			}
+		}
+		""", macros: testMacros, indentationWidth: .tabs(1))
+	}
+
 	func test__init__varHasOmitFromInitAttribute_multipleDeclarationsPerType__allAreOmitted() async throws {
 		XCTExpectFailure("assertMacroExpansion() gives different result than actually using the macro", issueMatcher: {
 			$0.compactDescription == """
@@ -532,6 +552,9 @@ final class InitMacroTests: XCTestCase {
 			var a2: Int? = 1
 			var b: String?
 			var b2: String? = "foo"
+
+			let c: Int?
+			let d: String?
 		}
 		""",
 		expandedSource: """
@@ -541,11 +564,16 @@ final class InitMacroTests: XCTestCase {
 			var b: String?
 			var b2: String? = "foo"
 
-			init(a: Int? = nil, a2: Int? = 1, b: String? = nil, b2: String? = "foo") {
+			let c: Int?
+			let d: String?
+
+			init(a: Int? = nil, a2: Int? = 1, b: String? = nil, b2: String? = "foo", c: Int? = nil, d: String? = nil) {
 				self.a = a
 				self.a2 = a2
 				self.b = b
 				self.b2 = b2
+				self.c = c
+				self.d = d
 			}
 		}
 		""", macros: testMacros, indentationWidth: .tabs(1))
