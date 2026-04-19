@@ -77,6 +77,24 @@ final class InitMacroTests: XCTestCase {
 		""", macros: testMacros, indentationWidth: .tabs(1))
 	}
 
+	func test__init__propertyIsFunc_propertyIsSendable__funcIsMarkedAsEscaping() async throws {
+		assertMacroExpansion("""
+		@Init
+		struct Foo {
+			var a: @Sendable (String) -> Int
+		}
+		""",
+		expandedSource: """
+		struct Foo {
+			var a: @Sendable (String) -> Int
+
+			init(a: @Sendable @escaping (String) -> Int) {
+				self.a = a
+			}
+		}
+		""", macros: testMacros, indentationWidth: .tabs(1))
+	}
+
 	func test__init__propertyHaveDidSetBlock__initIsInternal_allFieldsIncluded() async throws {
 		assertMacroExpansion("""
 		@Init()

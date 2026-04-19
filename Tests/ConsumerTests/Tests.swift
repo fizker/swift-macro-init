@@ -137,6 +137,17 @@ struct Tests {
 	}
 
 	@Test
+	func generatedInit__propertyContainsSendableBlock__funcIsEscaped() async throws {
+		@Init
+		struct Foo {
+			var a: @Sendable (String) -> Int
+		}
+
+		let instance = Foo(a: { $0.count })
+		#expect(instance.a("foo") == 3)
+	}
+
+	@Test
 	func generatedInit__optionalProperties_optionForExplicitDefaultsOnly__allPropertiesMustBeSet() async throws {
 		@Init(optionals: .explicitDefault)
 		class Foo {
@@ -208,6 +219,14 @@ struct Tests {
 		@Init
 		struct Foo {
 			let a = Bar()
+		}
+	}
+
+	@Test
+	func generatedInit__propertyContainsRestrictedKeyword__initStillWorks() async throws {
+		@Init
+		struct Foo {
+			var `class`: String
 		}
 	}
 }

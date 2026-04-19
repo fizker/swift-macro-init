@@ -88,13 +88,9 @@ func isComputed(_ binding: PatternBindingSyntax) -> Bool {
 
 func inferType(_ binding: PatternBindingSyntax) throws -> TypeAnnotationSyntax {
 	if let type = binding.typeAnnotation {
-		if let `func` = type.type.as(FunctionTypeSyntax.self) {
-			return TypeAnnotationSyntax(type: AttributedTypeSyntax(
-				// This empty list is necessary to avoid a deprecation warning
-				specifiers: [],
-				attributes: "@escaping",
-				baseType: `func`,
-			))
+		if var `func` = unpackFunctionAsAttributedType(type: type.type) {
+			`func`.attributes.append(.init("@escaping"))
+			return TypeAnnotationSyntax(type: `func`)
 		}
 		return type.trimmed
 	}
@@ -106,6 +102,25 @@ func inferType(_ binding: PatternBindingSyntax) throws -> TypeAnnotationSyntax {
 
 	let ident = try inferType(initializer.value)
 	return TypeAnnotationSyntax(type: IdentifierTypeSyntax(name: .identifier(ident)))
+}
+
+func unpackFunctionAsAttributedType(type: TypeSyntax) -> AttributedTypeSyntax? {
+	if let `func` = type.as(FunctionTypeSyntax.self) {
+		return AttributedTypeSyntax(
+			// This empty list is necessary to avoid a deprecation warning
+			specifiers: [],
+			baseType: `func`,
+		)
+	}
+
+	if let wrapper = type.as(AttributedTypeSyntax.self) {
+		guard wrapper.baseType.is(FunctionTypeSyntax.self)
+		else { return nil }
+
+		return wrapper
+	}
+
+	return nil
 }
 
 func inferType(_ value: ExprSyntax) throws -> String {
