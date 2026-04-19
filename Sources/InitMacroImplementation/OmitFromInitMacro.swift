@@ -11,13 +11,16 @@ public struct OmitFromInitMacro: PeerMacro, NamedAttachedMacro {
 	) throws -> [SwiftSyntax.DeclSyntax] {
 		guard
 			let varDecl = declaration.as(VariableDeclSyntax.self),
-			let binding = varDecl.bindings.first
+			!varDecl.bindings.isEmpty
 		else { return [] }
 
-		let defaultValue = binding.initializer?.value.trimmedDescription
-		guard defaultValue != nil
-		else {
-			throw MacroExpansionErrorMessage("Omitted properties require a default value.")
+		let initConfig = try InitMacro(parseConfigData: varDecl)
+
+		for member in initConfig.members {
+			guard member.defaultValue != nil
+			else {
+				throw MacroExpansionErrorMessage("Omitted properties require a default value.")
+			}
 		}
 
 		return []

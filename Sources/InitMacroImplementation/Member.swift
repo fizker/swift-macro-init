@@ -5,6 +5,8 @@ struct Member {
 	var name: PatternSyntax
 	var type: TypeAnnotationSyntax
 	var defaultValue: String?
+	var shouldBeOmitted: Bool
+	var shouldBeIncluded: Bool { !shouldBeOmitted }
 
 	var asParameter: String {
 		let base = "\(name)\(type)"
@@ -18,9 +20,14 @@ struct Member {
 
 extension Member {
 	static func members(for item: MemberBlockItemListSyntax.Element, optionals: OptionalOptions) throws -> [Member] {
-		guard
-			let varDecl = item.decl.as(VariableDeclSyntax.self),
-			let varType = VariableType(varDecl.bindingSpecifier)
+		guard let varDecl = item.decl.as(VariableDeclSyntax.self)
+		else { return [] }
+
+		return try members(for: varDecl, optionals: optionals)
+	}
+
+	static func members(for varDecl: VariableDeclSyntax, optionals: OptionalOptions) throws -> [Member] {
+		guard let varType = VariableType(varDecl.bindingSpecifier)
 		else { return [] }
 
 		guard varDecl.attribute(of: DefaultInitValueMacro.self) == nil || varDecl.bindings.count == 1
@@ -33,9 +40,7 @@ extension Member {
 		guard !isComputed(binding)
 		else { return nil }
 
-		guard !varDecl.contains(attribute: OmitFromInitMacro.self)
-		else { return nil }
-
+		shouldBeOmitted = varDecl.contains(attribute: OmitFromInitMacro.self)
 		name = binding.pattern.trimmed
 		defaultValue = binding.initializer?.value.trimmedDescription
 

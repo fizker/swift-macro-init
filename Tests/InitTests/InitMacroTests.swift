@@ -6,12 +6,13 @@ import XCTest
 
 // Macro implementations build for the host, so the corresponding module is not available when cross-compiling. Cross-compiled tests may still make use of the macro itself in end-to-end tests.
 #if canImport(InitMacroImplementation)
-import InitMacroImplementation
+@testable import InitMacroImplementation
 
 let testMacros: [String: Macro.Type] = [
 	"Init": InitMacro.self,
 	DefaultInitValueMacro.name: DefaultInitValueMacro.self,
 	OmitFromInitMacro.name: OmitFromInitMacro.self,
+	InitConfigDataMacro.name: InitConfigDataMacro.self,
 ]
 final class InitMacroTests: XCTestCase {
 	func test__init__struct_simple_defaultAccess__initIsInternal_allFieldsIncluded() async throws {
@@ -222,6 +223,36 @@ final class InitMacroTests: XCTestCase {
 		], macros: testMacros, indentationWidth: .tabs(1))
 	}
 
+	func test__init__struct_multipleMembersForOneVar_secondMemberHaveNoDefaultValue_membersAreOmitted__diagnosticRaised() async throws {
+		XCTExpectFailure(issueMatcher: {
+			$0.compactDescription == """
+			failed - Expected 1 diagnostics but received 2:
+			3:2: peer macro can only be applied to a single variable
+			4:2: peer macro can only be applied to a single variable
+			"""
+		})
+
+		assertMacroExpansion("""
+		@Init()
+		struct Foo {
+			@OmitFromInit
+			var a: String = "", b: Int
+		}
+		""",
+		expandedSource: """
+		struct Foo {
+			var a: String = "", b: Int
+
+			init() {
+
+			}
+		}
+		""",
+		diagnostics: [
+			DiagnosticSpec(message: "Omitted properties require a default value.", line: 3, column: 2),
+		], macros: testMacros, indentationWidth: .tabs(1))
+	}
+
 	func test__init__struct_letHasDefaultValue__initIsSkippingMember() async throws {
 		assertMacroExpansion("""
 		@Init()
@@ -319,8 +350,9 @@ final class InitMacroTests: XCTestCase {
 	func test__init__varHasOmitFromInitAttribute_multipleDeclarationsPerType__allAreOmitted() async throws {
 		XCTExpectFailure("assertMacroExpansion() gives different result than actually using the macro", issueMatcher: {
 			$0.compactDescription == """
-			failed - Expected 0 diagnostics but received 1:
+			failed - Expected 0 diagnostics but received 2:
 			3:2: peer macro can only be applied to a single variable
+			4:2: peer macro can only be applied to a single variable
 			"""
 		})
 
@@ -328,13 +360,13 @@ final class InitMacroTests: XCTestCase {
 		@Init
 		struct Foo {
 			@OmitFromInit
-			var a: String, c: String
+			var a: Int = 1, b: String = ""
 			var b: Int, d: Int
 		}
 		""",
 		expandedSource: """
 		struct Foo {
-			var a: String, c: String
+			var a: Int = 1, b: String = ""
 			var b: Int, d: Int
 
 			init(b: Int, d: Int) {
@@ -610,6 +642,48 @@ final class InitMacroTests: XCTestCase {
 			}
 		}
 		""", macros: testMacros, indentationWidth: .tabs(1))
+	}
+
+	func test__init__optional_varIsOmitted__initIsOmittingVar() async throws {
+		assertMacroExpansion("""
+		@Init
+		struct Foo {
+			var a: Int?
+			@OmitFromInit
+			var b: Int?
+		}
+		""", expandedSource: """
+		struct Foo {
+			var a: Int?
+			var b: Int?
+
+			init(a: Int? = nil) {
+				self.a = a
+			}
+		}
+		""", macros: testMacros, indentationWidth: .tabs(1))
+	}
+
+	func test__init__optional_varIsOmitted_optionalsMustBeExplicit__diagnosticIsRaised() async throws {
+		assertMacroExpansion("""
+		@Init(optionals: .explicitDefault)
+		struct Foo {
+			var a: Int?
+			@OmitFromInit
+			var b: Int?
+		}
+		""", expandedSource: """
+		struct Foo {
+			var a: Int?
+			var b: Int?
+
+			init(a: Int?) {
+				self.a = a
+			}
+		}
+		""", diagnostics: [
+			DiagnosticSpec(message: "Omitted properties require a default value.", line: 4, column: 2),
+		], macros: testMacros, indentationWidth: .tabs(1))
 	}
 }
 #else
